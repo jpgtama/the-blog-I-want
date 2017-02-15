@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Why I create this game?</title>
+    <style>
+        .buttonBar{
+            padding-top: 20px;
+        }
+        .buttonBar > *{
+            display: block;
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="board" style="position: relative; display: inline-block">
+    <svg id="game-world" style="    background-color: #f2f6f7; border: 15px solid lightgray;"></svg>
+
+    <div class="buttonBar" style="position: absolute; right:-104px; top:0px;">
+        <button id="startButton" onclick="startGame()">Start</button>
+        <button id="stopButton" onclick="stopGame()">End</button>
+        <button id="replayButton" onclick="replayGame()">Replay</button>
+    </div>
+
+</div>
+
+
+
+
+
+<script src="greedy-snake.js"></script>
+
+</body>
+</html>
