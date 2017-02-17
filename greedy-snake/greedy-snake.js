@@ -7,22 +7,67 @@ var direction = {
 };
 
 function Rect() {
-    var rect = this.rawNode = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('fill', 'gray');
-    rect.setAttribute('width', rectSize_w);
-    rect.setAttribute('height', rectSize_h);
+    this.rawNode = createRect();
+    this.direction = direction.up;
+    this.ps = null;
 
     this.setPosition = function (p) {
         this.rawNode.setAttribute('x', p.x);
         this.rawNode.setAttribute('y', p.y);
+        this.updatePS();
+    };
+    this.getPosition = function () {
+        return {x: parseInt(this.rawNode.getAttribute('x')), y: parseInt(this.rawNode.getAttribute('y'))};
+    };
+    this.getPS = function () {
+        return {
+            x: parseInt(this.rawNode.getAttribute('x')),
+            y: parseInt(this.rawNode.getAttribute('y')),
+            w: parseInt(this.rawNode.getAttribute('width')),
+            h: parseInt(this.rawNode.getAttribute('height'))
+        };
+    };
+
+
+    this.updatePS = function () {
+        this.ps = this.getPS();
     };
 
     this.intoWorld = function () {
         gameWorld.appendChild(this.rawNode);
+    };
+
+    this.setDirection = function(d){
+        this.direction = d;
+    };
+    this.getDirection = function () {
+        return this.direction;
+    };
+
+    this.move = function () {
+        // use direction to calculate next position
+        calculatePositionByDirection(this.ps);
+        this.setDirection(this.ps);
     }
 
-    this.direction = direction.up;
+}
 
+function calculatePositionByDirection(/* position and size */ps, d) {
+    var lambda = {};
+    lambda[direction.up] = function (ps) {
+        ps.y = ps.y - ps.h;
+    };
+    lambda[direction.down] = function (ps) {
+        ps.y = ps.y + ps.h;
+    };
+    lambda[direction.left] = function (ps) {
+        ps.x = ps.x - ps.w;
+    };
+    lambda[direction.right] = function (ps) {
+        ps.x = ps.x + ps.w;
+    };
+
+    lambda[d](ps);
 }
 
 function RectLine() {
@@ -40,6 +85,7 @@ function RectLine() {
 
 
     this.addRect = function () {
+        this.getNextPosition();
         var rect = new Rect();
         this.rectList.push(rect);
         this.updateTailRect();
@@ -56,6 +102,10 @@ function RectLine() {
     };
 
     this.getNextPosition = function () {
+        // we need to calculate the positions of three different directions
+        var ps = this.tailRect.getPS();
+        calculatePositionByDirection(ps, this.tailRect.getDirection());
+
 
     };
 
@@ -68,6 +118,13 @@ function createRect(){
     rect.setAttribute('height', rectSize_h);
 }
 
+///////////////////////////////////
+// move direction
+var controlObject={
+    direction: 'up'
+};
+
+
 // world init settings
 var worldSize_w = 500;
 var worldSize_h = 500;
@@ -75,7 +132,6 @@ var worldSize_h = 500;
 var gameWorld = document.getElementById('game-world');
 gameWorld.setAttribute('width', worldSize_w);
 gameWorld.setAttribute('height',worldSize_h);
-
 
 
 // rect init settings
@@ -164,6 +220,7 @@ function forceInRange(value, min, max) {
     }
     return v;
 }
+
 var deadCover,deadText ;
 
 function dead() {
@@ -193,10 +250,10 @@ function dead() {
 }
 
 function replayGame() {
-    if(deadCover){
+    if(deadCover && deadCover.parentElement === gameWorld){
         gameWorld.removeChild(deadCover);
     }
-    if(deadText){
+    if(deadText && deadText.parentElement === gameWorld){
         gameWorld.removeChild(deadText);
     }
 
@@ -205,6 +262,10 @@ function replayGame() {
 
 document.onkeydown = checkKey;
 
+/**
+ * detect user arrow key and change direction
+ * @param e
+ */
 function checkKey(e) {
 
     e = e || window.event;
